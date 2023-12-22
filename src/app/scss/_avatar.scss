@@ -1,0 +1,15 @@
+.transcript-sentence__avatar {
+  align-items: center;
+  aspect-ratio: 1 / 1;
+  background-color: var(--c-teal);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  width: 24px;
+}
+
+.transcript-sentence__avatar-initials {
+  color: var(--c-white);
+  font-size: 12px;
+  line-height: 100%;
+}

@@ -1,0 +1,41 @@
+$avatar-size: 24px;
+$column-gap: 8px;
+
+%transcript-font {
+  color: var(--c-gray-700);
+  font-size: 14px;
+}
+
+.transcript-sentence {
+  & + & {
+    margin-block-start: 12px;
+  }
+
+  &__header {
+    align-items: center;
+    column-gap: $column-gap;
+    display: flex;
+
+    &:has(+ .transcript-sentence__text) {
+      margin-block-end: 4px;
+    }
+  }
+
+  &__name {
+    @extend %transcript-font;
+
+    font-weight: 700;
+  }
+
+  &__time {
+    @extend %transcript-font;
+  }
+
+  &__text-container {
+    padding-inline-start: calc($avatar-size + $column-gap);
+  }
+
+  &__text {
+    font-size: 14px;
+  }
+}

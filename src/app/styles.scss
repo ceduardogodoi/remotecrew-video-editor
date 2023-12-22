@@ -1,0 +1,46 @@
+@import './scss/avatar';
+@import './scss/content';
+@import './scss/searchbar';
+@import './scss/sidebar';
+@import './scss/transcript';
+@import './scss/video-editor';
+
+:root {
+  // c - colors
+  --c-black: #000000;
+  --c-blue: #2962FF;
+  --c-gray: #EEEEEE;
+  --c-gray-300: #E0E0E0;
+  --c-gray-700: #616161;
+  --c-purple: #9C27B0;
+  --c-teal: #64FFDA;
+  --c-white: #FFFFFF;
+
+  // s = spacings
+  --s-gutter: 24px;
+
+  // ff = font family
+  // fs = font size
+  --fs-base: 16px;
+
+  // b = borders
+  --b-base: 2px solid var(--c-gray-300);
+
+  // br = border radius
+  --br-base: 4px;
+
+  @media screen and (min-width: 1024px) {
+    --s-gutter: 32px;
+  }
+}
+
+body,
+button,
+p {
+  all: unset;
+  box-sizing: border-box;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}

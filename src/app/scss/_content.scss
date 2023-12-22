@@ -1,0 +1,20 @@
+.login__google-link {
+  display: flex;
+  font-size: 32px;
+  justify-content: center;
+  margin-block: 20px;
+  text-decoration: none;
+}
+
+.content {
+  background-color: var(--c-gray);
+  display: grid;
+  gap: 20px;
+  margin-inline: auto;
+  max-width: 1280px;
+  padding: var(--s-gutter);
+
+  @media screen and (min-width: 1024px) {
+    grid-template-columns: 1fr 0.5fr;
+  }
+}
