@@ -1,4 +1,3 @@
-import { YoutubeTranscript } from 'youtube-transcript'
 import { Sidebar } from '@/app/components/Sidebar'
 import { VideoEditor } from '@/app/components/VideoEditor'
 

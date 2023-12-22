@@ -7,6 +7,11 @@ $column-gap: 8px;
 }
 
 .transcript-sentence {
+  &--current {
+    background-color: var(--c-gray-300);
+    padding-block: 6px;
+  }
+
   & + & {
     margin-block-start: 12px;
   }

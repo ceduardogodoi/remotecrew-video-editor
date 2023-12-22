@@ -1,11 +1,11 @@
 'use client'
 
-import { PropsWithChildren, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { TabContent } from './TabContent'
 
 export type Tab = 'transcript' | 'summary'
 
-export function Tabs({ children }: PropsWithChildren) {
+export function Tabs() {
   const [activeTab, setActiveTab] = useState<Tab>('transcript')
 
   const transcriptRef = useRef<HTMLButtonElement | null>(null)
