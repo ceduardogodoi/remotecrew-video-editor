@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import { Avatar } from '@/app/components/Avatar';
+import { useAppContext } from '@/app/contexts';
 
 dayjs.extend(duration)
 
@@ -19,6 +20,8 @@ export function Transcript({
   isCurrentSentence,
 }: Props) {
   const transcriptRef = useRef<HTMLDivElement>(null)
+
+  const { handlePlayPauseVideo } = useAppContext()
 
   const name = 'Storyteller'
   const duration = dayjs.duration(time)
@@ -36,8 +39,9 @@ export function Transcript({
   }, [isCurrentSentence])
 
   return (
-    <div
+    <button
       className="transcript-sentence"
+      onClick={handlePlayPauseVideo}
     >
       <header className="transcript-sentence__header">
         <Avatar name={name} />
@@ -56,6 +60,6 @@ export function Transcript({
           {text}
         </p>
       </div>
-    </div>
+    </button>
   )
 }
