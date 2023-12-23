@@ -1,47 +1,48 @@
 'use client'
 
 import { useEffect, useRef } from 'react';
-import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
+import { dayjs } from '@/app/libs/dayjs'
 import { Avatar } from '@/app/components/Avatar';
 import { useAppContext } from '@/app/contexts';
-
-dayjs.extend(duration)
 
 interface Props {
   text: string
   time: number
-  isCurrentSentence: boolean
 }
 
 export function Transcript({
   text,
   time,
-  isCurrentSentence,
 }: Props) {
-  const transcriptRef = useRef<HTMLDivElement>(null)
-
-  const { handlePlayPauseVideo } = useAppContext()
-
   const name = 'Storyteller'
   const duration = dayjs.duration(time)
   const timeline = duration.format('mm:ss')
 
+  const transcriptRef = useRef<HTMLButtonElement | null>(null)
+
+  const {
+    handleSeekTo,
+    currentTimingMs,
+  } = useAppContext()
+
   useEffect(() => {
-    if (isCurrentSentence) {
+    if (currentTimingMs === time) {
       transcriptRef.current?.classList.add('transcript-sentence--current')
-      transcriptRef.current?.scrollIntoView({
-        behavior: 'smooth',
-      })
     } else {
       transcriptRef.current?.classList.remove('transcript-sentence--current')
     }
-  }, [isCurrentSentence])
+  }, [currentTimingMs, time])
+
+  function handleClick() {
+    const seconds = dayjs.duration(time).asSeconds()
+    handleSeekTo(time)
+  }
 
   return (
     <button
       className="transcript-sentence"
-      onClick={handlePlayPauseVideo}
+      onClick={handleClick}
+      ref={transcriptRef}
     >
       <header className="transcript-sentence__header">
         <Avatar name={name} />

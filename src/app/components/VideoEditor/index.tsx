@@ -23,6 +23,7 @@ export function VideoEditor() {
           playing={isVideoPlaying}
           onPlay={handlePlayVideo}
           onPause={handlePauseVideo}
+          controls
         />
       )}
 
