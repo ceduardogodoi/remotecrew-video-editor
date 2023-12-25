@@ -85,26 +85,25 @@ export function AppContextProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const { isVideoPlaying, sentenceIndex } = state
-    if (playerRef.current && isVideoPlaying && transcript[sentenceIndex]) {
-      // console.log('current transcript', sentenceIndex);
-      // console.log('timeoutsRef:', timeoutsRef.current)
+    if (!playerRef.current || !isVideoPlaying || !transcript[sentenceIndex]) return
+    if (sentenceIndex < 1) return
 
-      const previousTimeoutId = timeoutsRef.current.pop()
-      clearTimeout(previousTimeoutId)
-      // console.log('previousTimeoutId deleted:', previousTimeoutId)
+    const previousTimeoutId = timeoutsRef.current.pop()
+    clearTimeout(previousTimeoutId)
 
-      const { duration } = transcript[sentenceIndex]
-
-      const newTimeoutId = setTimeout(() => {
-        setState(previous => ({
-          ...previous,
-          sentenceIndex: previous.sentenceIndex + 1,
-        }))
-      }, duration)
-
-      timeoutsRef.current.push(newTimeoutId)
-      // console.log('newTimeoutId added:', newTimeoutId)
+    let duration = 2280
+    if (sentenceIndex >= 1) {
+      duration = transcript[sentenceIndex].offset - transcript[sentenceIndex - 1].offset
     }
+
+    const newTimeoutId = setTimeout(() => {
+      setState(previous => ({
+        ...previous,
+        sentenceIndex: previous.sentenceIndex + 1,
+      }))
+    }, duration)
+
+    timeoutsRef.current.push(newTimeoutId)
   }, [transcript, state.isVideoPlaying, state.sentenceIndex])
 
   return (
