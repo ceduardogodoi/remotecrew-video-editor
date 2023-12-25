@@ -86,7 +86,6 @@ export function AppContextProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const { isVideoPlaying, sentenceIndex } = state
     if (!playerRef.current || !isVideoPlaying || !transcript[sentenceIndex]) return
-    if (sentenceIndex < 1) return
 
     const previousTimeoutId = timeoutsRef.current.pop()
     clearTimeout(previousTimeoutId)
