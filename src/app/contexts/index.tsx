@@ -12,16 +12,19 @@ import {
 import ReactPlayer from 'react-player'
 import { dayjs } from '@/app/libs/dayjs'
 import { useTranscript } from '@/app/hooks/useTranscript'
+import { duration } from 'dayjs'
 
 interface AppContext {
   playerRef: MutableRefObject<ReactPlayer | null>,
   isPlayerReady: boolean
   isVideoPlaying: boolean
-  currentTimingMs: number
+  currentTime: number
+  sentenceIndex: number
+
   handlePlayVideo(): void
   handlePauseVideo(): void
   handlePlayPauseVideo(): void
-  handleSeekTo(seconds: number): void
+  handleSeekTo(seconds: number, index: number): void
 }
 
 const AppContext = createContext({} as AppContext)
@@ -29,13 +32,15 @@ const AppContext = createContext({} as AppContext)
 export function AppContextProvider({ children }: PropsWithChildren) {
   const { transcript } = useTranscript()
 
+  const playerRef = useRef<ReactPlayer | null>(null)
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([])
+
   const [state, setState] = useState({
     isPlayerReady: false,
     isVideoPlaying: false,
-    currentTimingMs: transcript[0]?.offset ?? 0,
+    currentTime: playerRef.current?.getCurrentTime() ?? 0,
+    sentenceIndex: 0,
   })
-
-  const playerRef = useRef<ReactPlayer | null>(null)
 
   function handlePlayVideo() {
     setState(previous => ({
@@ -58,13 +63,14 @@ export function AppContextProvider({ children }: PropsWithChildren) {
     }))
   }
 
-  function handleSeekTo(time: number) {
+  function handleSeekTo(time: number, index: number) {
     const seconds = dayjs.duration(time).asSeconds()
     playerRef.current?.seekTo(seconds, 'seconds')
 
     setState(previous => ({
       ...previous,
-      currentTimingMs: time,
+      currentTime: time,
+      sentenceIndex: index,
     }))
   }
 
@@ -77,12 +83,37 @@ export function AppContextProvider({ children }: PropsWithChildren) {
     }
   }, [state.isPlayerReady])
 
+  useEffect(() => {
+    const { isVideoPlaying, sentenceIndex } = state
+    if (playerRef.current && isVideoPlaying && transcript[sentenceIndex]) {
+      // console.log('current transcript', sentenceIndex);
+      // console.log('timeoutsRef:', timeoutsRef.current)
+
+      const previousTimeoutId = timeoutsRef.current.pop()
+      clearTimeout(previousTimeoutId)
+      // console.log('previousTimeoutId deleted:', previousTimeoutId)
+
+      const { duration } = transcript[sentenceIndex]
+
+      const newTimeoutId = setTimeout(() => {
+        setState(previous => ({
+          ...previous,
+          sentenceIndex: previous.sentenceIndex + 1,
+        }))
+      }, duration)
+
+      timeoutsRef.current.push(newTimeoutId)
+      // console.log('newTimeoutId added:', newTimeoutId)
+    }
+  }, [transcript, state.isVideoPlaying, state.sentenceIndex])
+
   return (
     <AppContext.Provider value={{
       playerRef,
       isPlayerReady: state.isPlayerReady,
       isVideoPlaying: state.isVideoPlaying,
-      currentTimingMs: state.currentTimingMs,
+      currentTime: state.currentTime,
+      sentenceIndex: state.sentenceIndex,
 
       handlePlayVideo,
       handlePauseVideo,

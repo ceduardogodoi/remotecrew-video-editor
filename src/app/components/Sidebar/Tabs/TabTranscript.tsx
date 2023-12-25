@@ -17,6 +17,7 @@ export function TabTranscript() {
               key={index}
               text={sentence.text}
               time={sentence.offset}
+              index={index}
             />
           )
         )}

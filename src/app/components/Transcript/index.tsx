@@ -8,11 +8,13 @@ import { useAppContext } from '@/app/contexts';
 interface Props {
   text: string
   time: number
+  index: number
 }
 
 export function Transcript({
   text,
   time,
+  index,
 }: Props) {
   const name = 'Storyteller'
   const duration = dayjs.duration(time)
@@ -22,20 +24,20 @@ export function Transcript({
 
   const {
     handleSeekTo,
-    currentTimingMs,
+    sentenceIndex,
   } = useAppContext()
 
   useEffect(() => {
-    if (currentTimingMs === time) {
+    if (index === sentenceIndex) {
       transcriptRef.current?.classList.add('transcript-sentence--current')
+      transcriptRef.current?.scrollIntoView()
     } else {
       transcriptRef.current?.classList.remove('transcript-sentence--current')
     }
-  }, [currentTimingMs, time])
+  }, [index, sentenceIndex])
 
   function handleClick() {
-    const seconds = dayjs.duration(time).asSeconds()
-    handleSeekTo(time)
+    handleSeekTo(time, index)
   }
 
   return (
