@@ -17,9 +17,9 @@ export function VideoEditor() {
       {isPlayerReady && (
         <ReactPlayer
           ref={playerRef}
-          url="https://www.youtube.com/watch?v=ce5tWoPPRIQ"
+          url="/video.mp4"
           width="100%"
-          height="100%"
+          height="500px"
           playing={isVideoPlaying}
           onPlay={handlePlayVideo}
           onPause={handlePauseVideo}
@@ -27,7 +27,7 @@ export function VideoEditor() {
         />
       )}
 
-      <div className="video-editor__editor"></div>
+      <div className="video-editor__editor" />
     </div>
   )
 }
