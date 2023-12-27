@@ -37,9 +37,9 @@ export function AppContextProvider({ children }: PropsWithChildren) {
   let duration = 0
 
   const [firstTranscript, secondTranscript] = transcript
-    if (firstTranscript && secondTranscript) {
-      duration = secondTranscript.offset - firstTranscript.offset
-    }
+  if (firstTranscript && secondTranscript) {
+    duration = secondTranscript.offset - firstTranscript.offset
+  }
 
   const [state, setState] = useState({
     isPlayerReady: false,
@@ -91,23 +91,23 @@ export function AppContextProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const { isVideoPlaying, sentenceIndex } = state
-    if (!playerRef.current || !isVideoPlaying || !transcript[sentenceIndex]) return
+    if (playerRef.current && isVideoPlaying && transcript[sentenceIndex]) {
+      const previousTimeoutId = timeoutsRef.current.pop()
+      clearTimeout(previousTimeoutId)
 
-    const previousTimeoutId = timeoutsRef.current.pop()
-    clearTimeout(previousTimeoutId)
+      if (sentenceIndex >= 1) {
+        duration = transcript[sentenceIndex].offset - transcript[sentenceIndex - 1].offset
+      }
 
-    if (sentenceIndex >= 1) {
-      duration = transcript[sentenceIndex].offset - transcript[sentenceIndex - 1].offset
+      const newTimeoutId = setTimeout(() => {
+        setState(previous => ({
+          ...previous,
+          sentenceIndex: previous.sentenceIndex + 1,
+        }))
+      }, duration)
+
+      timeoutsRef.current.push(newTimeoutId)
     }
-
-    const newTimeoutId = setTimeout(() => {
-      setState(previous => ({
-        ...previous,
-        sentenceIndex: previous.sentenceIndex + 1,
-      }))
-    }, duration)
-
-    timeoutsRef.current.push(newTimeoutId)
   }, [transcript, state.isVideoPlaying, state.sentenceIndex])
 
   return (
