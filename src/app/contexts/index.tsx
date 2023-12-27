@@ -12,13 +12,11 @@ import {
 import ReactPlayer from 'react-player'
 import { dayjs } from '@/app/libs/dayjs'
 import { useTranscript } from '@/app/hooks/useTranscript'
-import { duration } from 'dayjs'
 
 interface AppContext {
   playerRef: MutableRefObject<ReactPlayer | null>,
   isPlayerReady: boolean
   isVideoPlaying: boolean
-  currentTime: number
   sentenceIndex: number
 
   handlePlayVideo(): void
@@ -34,19 +32,18 @@ export function AppContextProvider({ children }: PropsWithChildren) {
 
   const playerRef = useRef<ReactPlayer | null>(null)
   const timeoutsRef = useRef<NodeJS.Timeout[]>([])
-  let duration = 0
+  let timeoutDuration = 0
 
-  const [firstTranscript, secondTranscript] = transcript
-  if (firstTranscript && secondTranscript) {
-    duration = secondTranscript.offset - firstTranscript.offset
-  }
-
+  const [currentTime, setCurrentTime] = useState(playerRef.current?.getCurrentTime() ?? 0)
   const [state, setState] = useState({
     isPlayerReady: false,
     isVideoPlaying: false,
-    currentTime: playerRef.current?.getCurrentTime() ?? 0,
     sentenceIndex: 0,
   })
+  const [firstTranscript, secondTranscript] = transcript
+  if (firstTranscript && secondTranscript) {
+    timeoutDuration = secondTranscript.offset - firstTranscript.offset
+  }
 
   function handlePlayVideo() {
     setState(previous => ({
@@ -75,7 +72,6 @@ export function AppContextProvider({ children }: PropsWithChildren) {
 
     setState(previous => ({
       ...previous,
-      currentTime: time,
       sentenceIndex: index,
     }))
   }
@@ -96,7 +92,7 @@ export function AppContextProvider({ children }: PropsWithChildren) {
       clearTimeout(previousTimeoutId)
 
       if (sentenceIndex >= 1) {
-        duration = transcript[sentenceIndex].offset - transcript[sentenceIndex - 1].offset
+        timeoutDuration = transcript[sentenceIndex].offset - transcript[sentenceIndex - 1].offset
       }
 
       const newTimeoutId = setTimeout(() => {
@@ -104,7 +100,7 @@ export function AppContextProvider({ children }: PropsWithChildren) {
           ...previous,
           sentenceIndex: previous.sentenceIndex + 1,
         }))
-      }, duration)
+      }, timeoutDuration)
 
       timeoutsRef.current.push(newTimeoutId)
     }
@@ -115,7 +111,6 @@ export function AppContextProvider({ children }: PropsWithChildren) {
       playerRef,
       isPlayerReady: state.isPlayerReady,
       isVideoPlaying: state.isVideoPlaying,
-      currentTime: state.currentTime,
       sentenceIndex: state.sentenceIndex,
 
       handlePlayVideo,

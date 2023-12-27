@@ -1,7 +1,23 @@
 .btn {
+  align-items: center;
   background-color: var(--c-purple);
   border-radius: 20px;
   color: var(--c-white);
   cursor: pointer;
-  padding: 6px 12px;
+  display: flex;
+  padding: 10px;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  & span {
+    font-size: 14px;
+    line-height: 100%;
+  }
+
+  & svg ~ span {
+    margin-inline-start: 4px;
+  }
 }
