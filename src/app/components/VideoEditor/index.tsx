@@ -2,29 +2,44 @@
 
 import ReactPlayer from 'react-player/lazy'
 import dayjs from 'dayjs'
+import { useForm } from 'react-hook-form'
 import { Pause, Play } from 'lucide-react'
 import { useAppContext } from '@/app/contexts'
 import { useFFmpeg } from '@/app/hooks/useFFmpeg'
 
+interface Inputs {
+  startTime: string
+  endTime: string
+}
+
 export function VideoEditor() {
+  const { register, handleSubmit } = useForm<Inputs>()
+
   const {
-    ffmpeg,
-    loadAndClipVideo,
     isProcessing,
     edittedVideoURL,
+    loadAndCropVideo,
   } = useFFmpeg()
 
   const {
     isPlayerReady,
     isVideoPlaying,
     playerRef,
+    videoDuration: videoDurationSeconds,
+
     handlePlayVideo,
     handlePauseVideo,
     handlePlayPauseVideo,
   } = useAppContext()
 
-  async function handleClipVideo() {
-    await loadAndClipVideo()
+
+  let videoDuration: string | null = null
+  if (videoDurationSeconds) {
+    videoDuration = dayjs.duration(videoDurationSeconds, 's').format('mm:ss')
+  }
+
+  async function handleClipVideo({ startTime, endTime }: Inputs) {
+    await loadAndCropVideo(startTime, endTime)
   }
 
   return (
@@ -45,7 +60,7 @@ export function VideoEditor() {
         <button
           className="btn"
           onClick={handlePlayPauseVideo}
-          disabled={isProcessing}
+          title={isVideoPlaying ? 'Pause video' : 'Play video'}
         >
           {isVideoPlaying ? (
             <Pause fill="currentColor" size={18} />
@@ -58,15 +73,64 @@ export function VideoEditor() {
           </span>
         </button>
 
-        {edittedVideoURL && (
-          <ReactPlayer
-            url={edittedVideoURL}
-            width="100%"
-            height="500px"
-            controls
-          />
+        {videoDuration && (
+          <form className="video-editor__clip-timings" onSubmit={handleSubmit(handleClipVideo)}>
+            <button
+              type="submit"
+              className="btn btn--secondary"
+              title="Crop video in selected time range"
+              disabled={isProcessing}
+            >
+              Crop
+            </button>
+
+            <div className="video-editor__form-field">
+              <label
+                className="video-editor__form-label"
+                htmlFor="start"
+              >
+                Start:
+              </label>
+              <input
+                className="video-editor__form-input"
+                id="start"
+                type="text"
+                defaultValue="00:00"
+                {...register('startTime')}
+              />
+            </div>
+
+            <span className="video-editor__time-separator">
+              -
+            </span>
+
+            <div className="video-editor__form-field">
+              <label
+                className="video-editor__form-label"
+                htmlFor="end"
+              >
+                End:
+              </label>
+              <input
+                className="video-editor__form-input"
+                id="end"
+                type="text"
+                defaultValue={videoDuration}
+                {...register('endTime')}
+              />
+            </div>
+          </form>
         )}
       </div>
+
+      {edittedVideoURL && (
+        <ReactPlayer
+          url={edittedVideoURL}
+          width="100%"
+          height="500px"
+          controls
+        />
+      )}
     </div>
   )
 }

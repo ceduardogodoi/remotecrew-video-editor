@@ -49,3 +49,8 @@ p {
 body {
   -webkit-font-smoothing: antialiased;
 }
+
+input,
+textarea {
+  font-family: var(--fs-base);
+}

@@ -1,6 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
+import dayjs from 'dayjs';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
-import { useEffect, useRef, useState } from 'react';
 
 export function useFFmpeg() {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -16,7 +17,13 @@ export function useFFmpeg() {
     }
   }
 
-  async function loadAndClipVideo() {
+  async function loadAndCropVideo(startTimeStr: string, endTimeStr: string) {
+    const [startTime, endTime] = [startTimeStr, endTimeStr]
+      .map(time => {
+        const [minutes, seconds] = time.split(':').map(Number)
+        return dayjs.duration({ hours: 0, minutes, seconds }).format('HH:mm:ss')
+      })
+
     setIsProcessing(true)
 
     const videoURL = new URL('/video.mp4', 'http://localhost:3000')
@@ -29,7 +36,8 @@ export function useFFmpeg() {
 
     await ffmpegRef.current?.exec([
       '-i', 'video.mp4',
-      '-t', '2.5',
+      '-ss', startTime,
+      '-to', endTime,
       'video-clip.mp4',
     ])
 
@@ -51,6 +59,6 @@ export function useFFmpeg() {
     ffmpeg: ffmpegRef.current,
     isProcessing,
     edittedVideoURL,
-    loadAndClipVideo,
+    loadAndCropVideo,
   }
 }

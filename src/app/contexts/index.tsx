@@ -18,6 +18,7 @@ interface AppContext {
   isPlayerReady: boolean
   isVideoPlaying: boolean
   sentenceIndex: number
+  videoDuration?: number
 
   handlePlayVideo(): void
   handlePauseVideo(): void
@@ -32,9 +33,10 @@ export function AppContextProvider({ children }: PropsWithChildren) {
 
   const playerRef = useRef<ReactPlayer | null>(null)
   const timeoutsRef = useRef<NodeJS.Timeout[]>([])
+
+  const videoDuration = playerRef.current?.getDuration()
   let timeoutDuration = 0
 
-  const [currentTime, setCurrentTime] = useState(playerRef.current?.getCurrentTime() ?? 0)
   const [state, setState] = useState({
     isPlayerReady: false,
     isVideoPlaying: false,
@@ -112,6 +114,7 @@ export function AppContextProvider({ children }: PropsWithChildren) {
       isPlayerReady: state.isPlayerReady,
       isVideoPlaying: state.isVideoPlaying,
       sentenceIndex: state.sentenceIndex,
+      videoDuration,
 
       handlePlayVideo,
       handlePauseVideo,

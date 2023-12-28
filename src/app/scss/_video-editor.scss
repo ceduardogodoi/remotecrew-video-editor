@@ -10,6 +10,45 @@
   }
 
   &__editor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 12px;
+  }
+
+  &__clip-timings {
+    align-items: inherit;
+    display: flex;
+  }
+
+  &__form-field {
+    align-items: center;
+    column-gap: 4px;
+    display: flex;
+
+    &:first-of-type {
+      margin-inline-start: 12px;
+    }
+  }
+
+  &__form-label {
+    color: var(--c-gray-700);
+  }
+
+  &__form-input {
+    background-color: var(--c-gray);
+    border: none;
+    border-radius: var(--br-base);
+    color: var(--c-black);
+    font-size: var(--fs-base);
+    inline-size: 50px;
+    outline: 2px solid var(--c-gray-300);
+    padding: 8px;
+    text-align: center;
+  }
+
+  &__time-separator {
+    color: var(--c-gray-700);
+    margin-inline: 12px;
   }
 }
