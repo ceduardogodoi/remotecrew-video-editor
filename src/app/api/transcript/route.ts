@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   for (let i = 0; i < sentences.length - 2; i++) {
     const duration = sentences[i + 1].offset - sentences[i].offset
     sentences[i].duration = duration
-}
+  }
+
   return NextResponse.json(sentences)
 }
