@@ -47,12 +47,13 @@ export function VideoEditor() {
       {isPlayerReady && (
         <ReactPlayer
           ref={playerRef}
-          url="/video.mp4"
+          url={edittedVideoURL ?? "/video.mp4"}
           width="100%"
           height="500px"
           playing={isVideoPlaying}
           onPlay={handlePlayVideo}
           onPause={handlePauseVideo}
+          controls={!!edittedVideoURL}
         />
       )}
 
@@ -122,15 +123,6 @@ export function VideoEditor() {
           </form>
         )}
       </div>
-
-      {edittedVideoURL && (
-        <ReactPlayer
-          url={edittedVideoURL}
-          width="100%"
-          height="500px"
-          controls
-        />
-      )}
     </div>
   )
 }
