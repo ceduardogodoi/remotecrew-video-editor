@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import { useTranscript } from '@/app/hooks/useTranscript';
 
 export function useFFmpeg() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [edittedVideoURL, setEdittedVideoURL] = useState<string | undefined>()
   const [progressPercentage, setProgressPercentage] = useState(0)
   const ffmpegRef = useRef<FFmpeg | null>(null)
+
+  const { cropTranscript } = useTranscript()
 
   let progressStatus: string
   switch (progressPercentage) {
@@ -34,7 +37,13 @@ export function useFFmpeg() {
     const [startTime, endTime] = [startTimeStr, endTimeStr]
       .map(time => {
         const [minutes, seconds] = time.split(':').map(Number)
-        return dayjs.duration({ hours: 0, minutes, seconds }).format('HH:mm:ss')
+
+        const duration = dayjs.duration({ hours: 0, minutes, seconds })
+
+        return {
+          timeMs: duration.asMilliseconds(),
+          timeFormatted: duration.format('HH:mm:ss'),
+        }
       })
 
     setIsProcessing(true)
@@ -43,11 +52,11 @@ export function useFFmpeg() {
     const file = await fetchFile(videoURL.href)
     await ffmpegRef.current?.writeFile('./video.mp4', file)
 
-    // if (process.env.NODE_ENV === 'development') {
-    //   ffmpegRef.current?.on('log', ({ type, message }) => {
-    //     console.log(`${type}: ${message}`)
-    //   })
-    // }
+    if (process.env.NODE_ENV === 'development') {
+      ffmpegRef.current?.on('log', ({ type, message }) => {
+        console.log(`${type}: ${message}`)
+      })
+    }
 
     ffmpegRef.current?.on('progress', ({ progress }) => {
       setProgressPercentage(Math.round(progress * 100))
@@ -55,8 +64,8 @@ export function useFFmpeg() {
 
     await ffmpegRef.current?.exec([
       '-i', 'video.mp4',
-      '-ss', startTime,
-      '-to', endTime,
+      '-ss', startTime.timeFormatted,
+      '-to', endTime.timeFormatted,
       'video-clip.mp4',
     ])
 
@@ -64,6 +73,8 @@ export function useFFmpeg() {
     if (data) {
       const url = URL.createObjectURL(new Blob([data], { type: 'video/mp4' }))
       setEdittedVideoURL(url)
+
+      cropTranscript(startTime.timeMs, endTime.timeMs)
     }
 
     setIsProcessing(false)

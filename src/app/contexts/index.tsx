@@ -11,15 +11,17 @@ import {
 } from 'react'
 import ReactPlayer from 'react-player'
 import { dayjs } from '@/app/libs/dayjs'
-import { useTranscript } from '@/app/hooks/useTranscript'
+import { TranscriptResponse } from 'youtube-transcript'
 
 interface AppContext {
+  transcript: TranscriptResponse[],
   playerRef: MutableRefObject<ReactPlayer | null>,
   isPlayerReady: boolean
   isVideoPlaying: boolean
   sentenceIndex: number
   videoDuration?: number
 
+  updateTranscript(newTranscript: TranscriptResponse[]): void
   handlePlayVideo(): void
   handlePauseVideo(): void
   handlePlayPauseVideo(): void
@@ -29,8 +31,6 @@ interface AppContext {
 const AppContext = createContext({} as AppContext)
 
 export function AppContextProvider({ children }: PropsWithChildren) {
-  const { transcript } = useTranscript()
-
   const playerRef = useRef<ReactPlayer | null>(null)
   const timeoutsRef = useRef<NodeJS.Timeout[]>([])
 
@@ -41,6 +41,7 @@ export function AppContextProvider({ children }: PropsWithChildren) {
     isVideoPlaying: false,
     sentenceIndex: 0,
   })
+  const [transcript, setTranscript] = useState<TranscriptResponse[]>([])
 
   function handlePlayVideo() {
     setState(previous => ({
@@ -73,6 +74,15 @@ export function AppContextProvider({ children }: PropsWithChildren) {
     }))
   }
 
+  function updateTranscript(newTranscript: TranscriptResponse[]) {
+    setTranscript(newTranscript)
+
+    setState(previous => ({
+      ...previous,
+      sentenceIndex: 0,
+    }))
+  }
+
   useEffect(() => {
     if (!state.isPlayerReady) {
       setState(previous => ({
@@ -101,12 +111,14 @@ export function AppContextProvider({ children }: PropsWithChildren) {
 
   return (
     <AppContext.Provider value={{
+      transcript,
       playerRef,
       isPlayerReady: state.isPlayerReady,
       isVideoPlaying: state.isVideoPlaying,
       sentenceIndex: state.sentenceIndex,
       videoDuration,
 
+      updateTranscript,
       handlePlayVideo,
       handlePauseVideo,
       handlePlayPauseVideo,

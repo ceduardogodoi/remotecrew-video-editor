@@ -45,6 +45,11 @@
     outline: 2px solid var(--c-gray-300);
     padding: 8px;
     text-align: center;
+
+    &:disabled {
+      color: var(--c-gray-700);
+      cursor: not-allowed;
+    }
   }
 
   &__time-separator {

@@ -62,6 +62,7 @@ export function VideoEditor() {
           className="btn"
           onClick={handlePlayPauseVideo}
           title={isVideoPlaying ? 'Pause video' : 'Play video'}
+          disabled={isProcessing}
         >
           {isVideoPlaying ? (
             <Pause fill="currentColor" size={18} />
@@ -96,7 +97,8 @@ export function VideoEditor() {
                 className="video-editor__form-input"
                 id="start"
                 type="text"
-                defaultValue="00:00"
+                defaultValue="01:50"
+                disabled={isProcessing}
                 {...register('startTime')}
               />
             </div>
@@ -117,6 +119,7 @@ export function VideoEditor() {
                 id="end"
                 type="text"
                 defaultValue={videoDuration}
+                disabled={isProcessing}
                 {...register('endTime')}
               />
             </div>
