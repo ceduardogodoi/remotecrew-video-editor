@@ -6,7 +6,20 @@ import { fetchFile } from '@ffmpeg/util';
 export function useFFmpeg() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [edittedVideoURL, setEdittedVideoURL] = useState<string | undefined>()
+  const [progressPercentage, setProgressPercentage] = useState(0)
   const ffmpegRef = useRef<FFmpeg | null>(null)
+
+  let progressStatus: string
+  switch (progressPercentage) {
+    case 0:
+      progressStatus = 'Crop'
+      break
+    case 100:
+      progressStatus = 'Cropped'
+      break
+    default:
+      progressStatus = `Cropping... ${progressPercentage}%`
+  }
 
   async function loadFFmpeg() {
     if (!ffmpegRef.current) {
@@ -30,8 +43,14 @@ export function useFFmpeg() {
     const file = await fetchFile(videoURL.href)
     await ffmpegRef.current?.writeFile('./video.mp4', file)
 
-    ffmpegRef.current?.on('log', ({ type, message }) => {
-      console.log(`${type}: ${message}`)
+    // if (process.env.NODE_ENV === 'development') {
+    //   ffmpegRef.current?.on('log', ({ type, message }) => {
+    //     console.log(`${type}: ${message}`)
+    //   })
+    // }
+
+    ffmpegRef.current?.on('progress', ({ progress }) => {
+      setProgressPercentage(Math.round(progress * 100))
     })
 
     await ffmpegRef.current?.exec([
@@ -59,6 +78,8 @@ export function useFFmpeg() {
     ffmpeg: ffmpegRef.current,
     isProcessing,
     edittedVideoURL,
+    progressPercentage,
+    progressStatus,
     loadAndCropVideo,
   }
 }

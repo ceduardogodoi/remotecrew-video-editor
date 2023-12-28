@@ -18,6 +18,7 @@ export function VideoEditor() {
   const {
     isProcessing,
     edittedVideoURL,
+    progressStatus,
     loadAndCropVideo,
   } = useFFmpeg()
 
@@ -31,7 +32,6 @@ export function VideoEditor() {
     handlePauseVideo,
     handlePlayPauseVideo,
   } = useAppContext()
-
 
   let videoDuration: string | null = null
   if (videoDurationSeconds) {
@@ -82,7 +82,7 @@ export function VideoEditor() {
               title="Crop video in selected time range"
               disabled={isProcessing}
             >
-              Crop
+              {progressStatus}
             </button>
 
             <div className="video-editor__form-field">
