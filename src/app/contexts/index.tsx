@@ -35,17 +35,12 @@ export function AppContextProvider({ children }: PropsWithChildren) {
   const timeoutsRef = useRef<NodeJS.Timeout[]>([])
 
   const videoDuration = playerRef.current?.getDuration()
-  let timeoutDuration = 0
 
   const [state, setState] = useState({
     isPlayerReady: false,
     isVideoPlaying: false,
     sentenceIndex: 0,
   })
-  const [firstTranscript, secondTranscript] = transcript
-  if (firstTranscript && secondTranscript) {
-    timeoutDuration = secondTranscript.offset - firstTranscript.offset
-  }
 
   function handlePlayVideo() {
     setState(previous => ({
@@ -93,16 +88,12 @@ export function AppContextProvider({ children }: PropsWithChildren) {
       const previousTimeoutId = timeoutsRef.current.pop()
       clearTimeout(previousTimeoutId)
 
-      if (sentenceIndex >= 1) {
-        timeoutDuration = transcript[sentenceIndex].offset - transcript[sentenceIndex - 1].offset
-      }
-
       const newTimeoutId = setTimeout(() => {
         setState(previous => ({
           ...previous,
           sentenceIndex: previous.sentenceIndex + 1,
         }))
-      }, timeoutDuration)
+      }, transcript[sentenceIndex].duration)
 
       timeoutsRef.current.push(newTimeoutId)
     }
