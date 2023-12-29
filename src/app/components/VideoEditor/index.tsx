@@ -87,10 +87,21 @@ export function VideoEditor() {
               type="submit"
               className="btn btn--secondary"
               title="Crop video in selected time range"
-              disabled={isProcessing}
+              disabled={isProcessing || progressStatus === 'Cropped'}
             >
               {progressStatus}
             </button>
+
+            {!!edittedVideoURL && (
+              <a
+                href={edittedVideoURL}
+                className="btn"
+                type="button"
+                download
+              >
+                Download
+              </a>
+            )}
 
             <div className="video-editor__form-field">
               <label
@@ -104,7 +115,7 @@ export function VideoEditor() {
                 id="start"
                 type="text"
                 defaultValue="01:50"
-                disabled={isProcessing}
+                disabled={isProcessing || progressStatus === 'Cropped'}
                 {...register('startTime')}
               />
             </div>
@@ -125,7 +136,7 @@ export function VideoEditor() {
                 id="end"
                 type="text"
                 defaultValue={videoDuration}
-                disabled={isProcessing}
+                disabled={isProcessing || progressStatus === 'Cropped'}
                 {...register('endTime')}
               />
             </div>
