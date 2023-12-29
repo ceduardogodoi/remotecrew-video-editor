@@ -39,15 +39,21 @@ export function VideoEditor() {
   }
 
   async function handleClipVideo({ startTime, endTime }: Inputs) {
+    handlePauseVideo()
+
     await loadAndCropVideo(startTime, endTime)
   }
 
   return (
     <div className="video-editor">
+      {!!edittedVideoURL && (
+        <h1 className="video-editor__preview-title">Previewing cropped video</h1>
+      )}
+
       {isPlayerReady && (
         <ReactPlayer
           ref={playerRef}
-          url={edittedVideoURL ?? "/video.mp4"}
+          url={edittedVideoURL ?? "/input.mp4"}
           width="100%"
           height="500px"
           playing={isVideoPlaying}

@@ -3,6 +3,11 @@
   border: var(--b-base);
   border-radius: var(--br-base);
 
+  &__preview-title {
+    margin-block: 10px 0;
+    text-align: center;
+  }
+
   &__player {
     border: none;
     border-radius: inherit;

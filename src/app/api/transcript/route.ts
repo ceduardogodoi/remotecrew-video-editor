@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
   }
 
   const sentences = await YoutubeTranscript.fetchTranscript(videoId)
-  for (let i = 0; i < sentences.length - 2; i++) {
-    const duration = sentences[i + 1].offset - sentences[i].offset
-    sentences[i].duration = duration
+  sentences[0].duration = sentences[1].offset - sentences[0].offset
+  for (let i = 1; i < sentences.length; i++) {
+      sentences[i].duration = sentences[i].offset - sentences[i - 1].offset
   }
 
   return NextResponse.json(sentences)

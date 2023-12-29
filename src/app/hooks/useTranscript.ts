@@ -20,8 +20,8 @@ export function useTranscript() {
       return sentence.offset >= startMs && sentence.offset <= endMs
     })
 
-
     newTranscript[0].offset = 0
+    newTranscript[0].duration = 2000
     for (let i = 1; i < newTranscript.length; i++) {
       newTranscript[i].offset = newTranscript[i - 1].offset + newTranscript[i - 1].duration
     }

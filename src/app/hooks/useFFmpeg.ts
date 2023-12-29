@@ -48,9 +48,9 @@ export function useFFmpeg() {
 
     setIsProcessing(true)
 
-    const videoURL = new URL('/video.mp4', 'http://localhost:3000')
+    const videoURL = new URL('/input.mp4', 'http://localhost:3000')
     const file = await fetchFile(videoURL.href)
-    await ffmpegRef.current?.writeFile('./video.mp4', file)
+    await ffmpegRef.current?.writeFile('./input.mp4', file)
 
     if (process.env.NODE_ENV === 'development') {
       ffmpegRef.current?.on('log', ({ type, message }) => {
@@ -63,13 +63,13 @@ export function useFFmpeg() {
     })
 
     await ffmpegRef.current?.exec([
-      '-i', 'video.mp4',
+      '-i', 'input.mp4',
       '-ss', startTime.timeFormatted,
       '-to', endTime.timeFormatted,
-      'video-clip.mp4',
+      'output.mp4',
     ])
 
-    const data = await ffmpegRef.current?.readFile('./video-clip.mp4')
+    const data = await ffmpegRef.current?.readFile('./output.mp4')
     if (data) {
       const url = URL.createObjectURL(new Blob([data], { type: 'video/mp4' }))
       setEdittedVideoURL(url)

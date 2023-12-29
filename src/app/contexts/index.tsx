@@ -42,6 +42,7 @@ export function AppContextProvider({ children }: PropsWithChildren) {
     sentenceIndex: 0,
   })
   const [transcript, setTranscript] = useState<TranscriptResponse[]>([])
+  console.log(transcript)
 
   function handlePlayVideo() {
     setState(previous => ({
