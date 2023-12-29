@@ -48,9 +48,13 @@ export function useFFmpeg() {
 
     setIsProcessing(true)
 
-    const videoURL = new URL('/input.mp4', 'http://localhost:3000')
-    const file = await fetchFile(videoURL.href)
-    await ffmpegRef.current?.writeFile('./input.mp4', file)
+    const baseURL = 'http://localhost:3000'
+    const inputURL = new URL('/input.mp4', baseURL)
+    const logoURL = new URL('/logo.jpeg', baseURL)
+    const videoFile = await fetchFile(inputURL.href)
+    const logoFile = await fetchFile(logoURL.href)
+    await ffmpegRef.current?.writeFile('./input.mp4', videoFile)
+    await ffmpegRef.current?.writeFile('./logo.jpeg', logoFile)
 
     if (process.env.NODE_ENV === 'development') {
       ffmpegRef.current?.on('log', ({ type, message }) => {
@@ -64,6 +68,8 @@ export function useFFmpeg() {
 
     await ffmpegRef.current?.exec([
       '-i', 'input.mp4',
+      '-i', 'logo.jpeg',
+      '-filter_complex', '[0:v][1:v] overlay=25:50',
       '-ss', startTime.timeFormatted,
       '-to', endTime.timeFormatted,
       'output.mp4',
