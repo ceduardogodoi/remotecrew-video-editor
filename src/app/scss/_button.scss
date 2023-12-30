@@ -7,9 +7,11 @@
   cursor: pointer;
   display: flex;
   font-weight: bold;
+  justify-content: center;
   padding: 10px;
   text-decoration: none;
   transition: scale 100ms linear;
+  min-inline-size: 100px;
 
   & + & {
     margin-inline-start: 8px;

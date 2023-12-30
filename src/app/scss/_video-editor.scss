@@ -16,14 +16,54 @@
 
   &__editor {
     display: flex;
+    flex-direction: column;
+  }
+
+  &__timing-section {
+    border-bottom: var(--b-base);
+    display: flex;
     justify-content: space-between;
+    padding-inline: 12px;
+    padding-block: 8px;
+  }
+
+  &__timing {
     align-items: center;
+    display: flex;
+  }
+
+  &__properties-section {
+    background-color: var(--c-gray);
+    border-bottom: var(--b-base);
+    display: flex;
+    font-size: 14px;
     padding: 12px;
   }
 
-  &__clip-timings {
-    align-items: inherit;
+  &__properties {
     display: flex;
+  }
+
+  &__properties-label {
+    color: var(--c-gray-700);
+
+    & + .video-editor__property-option {
+      margin-inline-start: 12px;
+    }
+  }
+
+  &__property-option {
+    column-gap: 4px;
+    display: flex;
+
+    & + & {
+      margin-inline-start: 12px;
+    }
+
+    & label,
+    & input {
+      cursor: pointer;
+    }
   }
 
   &__form-field {

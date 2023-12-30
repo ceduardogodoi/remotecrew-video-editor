@@ -10,16 +10,23 @@ import { useFFmpeg } from '@/app/hooks/useFFmpeg'
 interface Inputs {
   startTime: string
   endTime: string
+  shouldAddIntro: boolean
+  shouldAddLogo: boolean
 }
 
 export function VideoEditor() {
-  const { register, handleSubmit } = useForm<Inputs>()
+  const { register, handleSubmit } = useForm<Inputs>({
+    defaultValues: {
+      shouldAddIntro: false,
+      shouldAddLogo: true,
+    }
+  })
 
   const {
     isProcessing,
     edittedVideoURL,
     progressStatus,
-    loadAndCropVideo,
+    processVideo,
   } = useFFmpeg()
 
   const {
@@ -38,10 +45,17 @@ export function VideoEditor() {
     videoDuration = dayjs.duration(videoDurationSeconds, 's').format('mm:ss')
   }
 
-  async function handleClipVideo({ startTime, endTime }: Inputs) {
+  async function handleProcessVideo(data: Inputs) {
+    const { startTime, endTime, shouldAddIntro, shouldAddLogo } = data
+    
     handlePauseVideo()
 
-    await loadAndCropVideo(startTime, endTime)
+    await processVideo({
+      startTimeStr: startTime,
+      endTimeStr: endTime,
+      shouldAddIntro,
+      shouldAddLogo
+    })
   }
 
   return (
@@ -63,86 +77,121 @@ export function VideoEditor() {
         />
       )}
 
-      <div className="video-editor__editor">
-        <button
-          className="btn"
-          onClick={handlePlayPauseVideo}
-          title={isVideoPlaying ? 'Pause video' : 'Play video'}
-          disabled={isProcessing}
-        >
-          {isVideoPlaying ? (
-            <Pause fill="currentColor" size={18} />
-          ) : (
-            <Play fill="currentColor" size={18} />
-          )}
-
-          <span>
-            {isVideoPlaying ? 'Pause' : 'Play'}
-          </span>
-        </button>
-
+      <form className="video-editor__editor" onSubmit={handleSubmit(handleProcessVideo)}>
         {videoDuration && (
-          <form className="video-editor__clip-timings" onSubmit={handleSubmit(handleClipVideo)}>
-            <button
-              type="submit"
-              className="btn btn--secondary"
-              title="Crop video in selected time range"
-              disabled={isProcessing || progressStatus === 'Cropped'}
-            >
-              {progressStatus}
-            </button>
-
-            {!!edittedVideoURL && (
-              <a
-                href={edittedVideoURL}
+          <>
+            <section className="video-editor__timing-section">
+              <button
                 className="btn"
+                onClick={handlePlayPauseVideo}
+                title={isVideoPlaying ? 'Pause video' : 'Play video'}
+                disabled={isProcessing}
                 type="button"
-                download
               >
-                Download
-              </a>
-            )}
+                {isVideoPlaying ? (
+                  <Pause fill="currentColor" size={18} />
+                ) : (
+                  <Play fill="currentColor" size={18} />
+                )}
 
-            <div className="video-editor__form-field">
-              <label
-                className="video-editor__form-label"
-                htmlFor="start"
-              >
-                Start:
-              </label>
-              <input
-                className="video-editor__form-input"
-                id="start"
-                type="text"
-                defaultValue="01:50"
-                disabled={isProcessing || progressStatus === 'Cropped'}
-                {...register('startTime')}
-              />
-            </div>
+                <span>
+                  {isVideoPlaying ? 'Pause' : 'Play'}
+                </span>
+              </button>
 
-            <span className="video-editor__time-separator">
-              -
-            </span>
+              <div className="video-editor__timing">
+                {progressStatus !== 'idle' && (
+                  <span>{progressStatus}</span>
+                )}
 
-            <div className="video-editor__form-field">
-              <label
-                className="video-editor__form-label"
-                htmlFor="end"
-              >
-                End:
-              </label>
-              <input
-                className="video-editor__form-input"
-                id="end"
-                type="text"
-                defaultValue={videoDuration}
-                disabled={isProcessing || progressStatus === 'Cropped'}
-                {...register('endTime')}
-              />
-            </div>
-          </form>
+                <button
+                  type="submit"
+                  className="btn btn--secondary"
+                  title="Crop video in selected time range"
+                  disabled={isProcessing}
+                >
+                  Crop
+                </button>
+
+                {!!edittedVideoURL && (
+                  <a
+                    href={edittedVideoURL}
+                    className="btn"
+                    type="button"
+                    download
+                  >
+                    Download
+                  </a>
+                )}
+
+                <div className="video-editor__form-field">
+                  <label
+                    className="video-editor__form-label"
+                    htmlFor="start"
+                  >
+                    Start:
+                  </label>
+                  <input
+                    className="video-editor__form-input"
+                    id="start"
+                    type="text"
+                    defaultValue="01:50"
+                    disabled={isProcessing}
+                    {...register('startTime')}
+                  />
+                </div>
+
+                <span className="video-editor__time-separator">
+                  -
+                </span>
+
+                <div className="video-editor__form-field">
+                  <label
+                    className="video-editor__form-label"
+                    htmlFor="end"
+                  >
+                    End:
+                  </label>
+                  <input
+                    className="video-editor__form-input"
+                    id="end"
+                    type="text"
+                    defaultValue={videoDuration}
+                    disabled={isProcessing}
+                    {...register('endTime')}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="video-editor__properties-section">
+              <div className="video-editor__properties">
+                <span className="video-editor__properties-label">Properties:</span>
+
+                <div className="video-editor__property-option">
+                  <input
+                    id="intro"
+                    type="checkbox"
+                    defaultChecked={false}
+                    {...register('shouldAddIntro')}
+                  />
+                  <label htmlFor="intro">Add Intro</label>
+                </div>
+
+                <div className="video-editor__property-option">
+                  <input
+                    id="logo"
+                    type="checkbox"
+                    defaultChecked
+                    {...register('shouldAddLogo')}
+                  />
+                  <label htmlFor="logo">Add Logo</label>
+                </div>
+              </div>
+            </section>
+          </>
         )}
-      </div>
+      </form>
     </div>
   )
 }
