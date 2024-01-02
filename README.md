@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Getting Started
 
-## Getting Started
+First, clone the project in a folder of your choice:
 
-First, run the development server:
+```sh
+git clone <<link>>
+```
 
-```bash
+Change to the project's directory:
+
+```sh
+cd remotecrew-video-editor
+```
+
+Install the dependencies:
+
+```sh
+npm i
+```
+
+Run the development server:
+
+```sh
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+The player app contains a random preloaded [video](https://www.youtube.com/watch?v=ce5tWoPPRIQ), and there are some features to play around with:
 
-## Learn More
+- Play/Pause
+- Crop the video (there are inputs to choose the start and end crop timings)
+- Add an intro video into the result generated video
+- Add a logo to the result generated video
 
-To learn more about Next.js, take a look at the following resources:
+The "process" button will generate a video applying the features you've chosen.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+E.g: if you have chosen to crop the video, and add a logo in it, the result will be a video with the logo in the top left corner.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+There's also a transcript that follows the video. You can also choose a moment in the video by clicking a sentence in the transcript.
 
-## Deploy on Vercel
+Enjoy!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Author
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [@ceduardogodoi](https://github.com/ceduardogodoi)
