@@ -21,7 +21,7 @@ export function useTranscript() {
     })
 
     newTranscript[0].offset = 0
-    newTranscript[0].duration = 2000
+    newTranscript[0].duration = introDurationMs + 2000
     for (let i = 1; i < newTranscript.length; i++) {
       newTranscript[i].offset = newTranscript[i - 1].offset + newTranscript[i - 1].duration
     }
