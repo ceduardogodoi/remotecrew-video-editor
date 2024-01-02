@@ -49,7 +49,8 @@ export function VideoEditor() {
     processVideo,
   } = useFFmpeg()
 
-  const shouldCrop = watch('shouldCrop')
+  const [shouldCrop, shouldAddIntro, shouldAddLogo] = watch(['shouldCrop', 'shouldAddIntro', 'shouldAddLogo'])
+  const hasNoProcess = !shouldCrop && !shouldAddIntro && !shouldAddLogo
 
   async function handleProcessVideo(data: ProcessVideoParams) {
     const { startTime, endTime, shouldAddIntro, shouldAddLogo, shouldCrop } = data
@@ -110,8 +111,8 @@ export function VideoEditor() {
                 <button
                   type="submit"
                   className="btn btn--secondary"
-                  title="Crop video in selected time range"
-                  disabled={isProcessing}
+                  title="Process the video according to the choosen settings"
+                  disabled={isProcessing || hasNoProcess}
                 >
                   Process
                 </button>
@@ -122,17 +123,6 @@ export function VideoEditor() {
                   {...register('shouldCrop')}
                   label="Auto Crop"
                 />
-
-                {!!edittedVideoURL && (
-                  <a
-                    href={edittedVideoURL}
-                    className="btn"
-                    type="button"
-                    download
-                  >
-                    Download
-                  </a>
-                )}
 
                 <div className="video-editor__form-field">
                   <label
@@ -200,12 +190,27 @@ export function VideoEditor() {
               </div>
             </section>
 
-            <p className="video-editor__status">
-              Status:{' '}
-              {progressStatus !== 'idle' && (
-                <span>{progressStatusText} ({progressPercentage}%)</span>
+            <div className="video-editor__status-wrapper">
+              <p className="video-editor__status">
+                Status:{' '}
+                {progressStatus !== 'error' && (
+                  <span>{progressStatusText} {progressStatus !== 'idle' && `(${progressPercentage}%)`}</span>
+                )}
+
+                {hasNoProcess && '- Please select at least one option to process the video'}
+              </p>
+
+              {!!edittedVideoURL && (
+                <a
+                  href={edittedVideoURL}
+                  className="btn"
+                  type="button"
+                  download
+                >
+                  Download
+                </a>
               )}
-            </p>
+            </div>
           </>
         )}
       </form>

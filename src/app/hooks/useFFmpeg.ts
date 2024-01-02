@@ -7,7 +7,12 @@ import { ProcessVideoParams } from '../components/VideoEditor';
 
 const baseURL = 'http://localhost:3000'
 
-type ProgressStatus = 'idle' | 'adding-intro' | 'adding-logo' | 'cropping' | 'done'
+type ProgressStatus = 'idle' | 'adding-intro' | 'adding-logo' | 'cropping' | 'done' | 'error'
+
+type IOFiles = {
+  inputFile?: string
+  outputFile?: string
+}
 
 export function useFFmpeg() {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -15,6 +20,7 @@ export function useFFmpeg() {
   const [progressPercentage, setProgressPercentage] = useState(0)
   const [progressStatus, setProgressStatus] = useState<ProgressStatus>('idle')
   const ffmpegRef = useRef<FFmpeg | null>(null)
+  const fileRef = useRef<IOFiles>({})
 
   const { cropTranscript } = useTranscript()
 
@@ -25,15 +31,19 @@ export function useFFmpeg() {
       break
     case 'cropping':
       progressStatusText = 'Cropping...'
+      break
     case 'adding-logo':
       progressStatusText = 'Adding logo...'
       break
     case 'done':
       progressStatusText = 'Done'
       break
+    case 'error':
+      progressStatusText = 'Error'
+      break
     case 'idle':
     default:
-      progressStatusText = null
+      progressStatusText = 'Idle'
   }
 
   async function loadFFmpeg() {
@@ -52,7 +62,8 @@ export function useFFmpeg() {
       startTime: startTimeStr,
       endTime: endTimeStr,
       shouldAddIntro,
-      shouldAddLogo
+      shouldAddLogo,
+      shouldCrop,
     } = params
 
     const [startTime, endTime] = [startTimeStr, endTimeStr]
@@ -76,41 +87,53 @@ export function useFFmpeg() {
       setProgressPercentage(percentage > 100 ? 100 : percentage)
     })
 
-    let outputFile = './output.mp4'
+    fileRef.current.inputFile = 'input.mp4'
+    const inputFile = fileRef.current.inputFile
 
-    await cropVideo(startTime.timeFormatted, endTime.timeFormatted, outputFile)
+    const inputURL = new URL(`/${inputFile}`, baseURL)
+    const videoFileWASM = await fetchFile(inputURL.href)
+    await ffmpegRef.current?.writeFile(`./${inputFile}`, videoFileWASM)
 
-    let introDurationMs = 0
-    if (shouldAddIntro) {
-      const { outputFileWithIntro, introDuration } = await addIntro(outputFile)
-      introDurationMs = introDuration
-      outputFile = outputFileWithIntro
+    try {
+      if (shouldCrop) {
+        await cropVideo(startTime.timeFormatted, endTime.timeFormatted)
+      }
+  
+      let introDurationMs = 0
+      if (shouldAddIntro) {
+        const introDuration = await addIntro()
+        introDurationMs = introDuration
+      }
+  
+      // if (shouldAddLogo) {
+      //   outputFile = await addLogo(outputFile)
+      // }
+  
+      const data = await ffmpegRef.current?.readFile(fileRef.current.outputFile!)
+      if (data) {
+        const url = URL.createObjectURL(new Blob([data], { type: 'video/*' }))
+        setEdittedVideoURL(url)
+  
+        cropTranscript(startTime.timeMs, endTime.timeMs, introDurationMs)
+      }
+
+      setProgressStatus('done')
+    } catch (error) {
+      console.log(error)
+      setProgressStatus('error')
     }
 
-    if (shouldAddLogo) {
-      outputFile = await addLogo(outputFile)
-    }
-
-    const data = await ffmpegRef.current?.readFile(outputFile)
-    if (data) {
-      const url = URL.createObjectURL(new Blob([data], { type: 'video/*' }))
-      setEdittedVideoURL(url)
-      URL.revokeObjectURL(url)
-
-      cropTranscript(startTime.timeMs, endTime.timeMs, introDurationMs)
-    }
+    const dir = await ffmpegRef.current?.listDir('/')
+    console.log('dir:::::', dir)
 
     setIsProcessing(false)
-    setProgressStatus('done')
   }
 
-  async function cropVideo(startTime: string, endTime: string, outputFile: string) {
+  async function cropVideo(startTime: string, endTime: string) {
     setProgressStatus('cropping')
 
-    const url = new URL('/input.mp4', baseURL)
-    const videoFile = await fetchFile(url.href)
-
-    await ffmpegRef.current?.writeFile('./input.mp4', videoFile)
+    fileRef.current.outputFile = 'output.mp4'
+    const outputFile = fileRef.current.outputFile
 
     await ffmpegRef.current?.exec([
       '-i', 'input.mp4',
@@ -120,14 +143,12 @@ export function useFFmpeg() {
     ])
   }
 
-  async function addIntro(inputFile: string) {
+  async function addIntro() {
     setProgressStatus('adding-intro')
 
-    const url = new URL('./intro.mp4', baseURL)
-    const introFile = await fetchFile(url.href)
+    const introURL = new URL('./intro.mp4', baseURL)
+    const introFile = await fetchFile(introURL.href)
     await ffmpegRef.current?.writeFile('./intro.mp4', introFile)
-
-    const outputFileWithIntro = 'intro-output.mkv'
 
     const video = document.createElement('video')
     video.setAttribute('src', './intro.mp4')
@@ -142,19 +163,19 @@ export function useFFmpeg() {
     }
     video.remove()
 
+    fileRef.current.outputFile = 'intro-output.mkv'
+    const outputFile = fileRef.current.outputFile
+
     await ffmpegRef.current?.exec([
       '-i', 'intro.mp4',
-      '-i', inputFile,
+      '-i', fileRef.current.inputFile ?? 'input.mp4',
       '-filter_complex', '[0:v] [0:a] [1:v] [1:a] concat=n=2:v=1:a=1 [v] [a]',
       '-map', '[v]',
       '-map', '[a]',
-      outputFileWithIntro,
+      outputFile,
     ])
 
-    return {
-      outputFileWithIntro,
-      introDuration,
-    }
+    return introDuration
   }
 
   async function addLogo(inputFile: string) {
@@ -175,7 +196,6 @@ export function useFFmpeg() {
 
     return outputFileWithLogo
   }
-
 
   useEffect(() => {
     loadFFmpeg()

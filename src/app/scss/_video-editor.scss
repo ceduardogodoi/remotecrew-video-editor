@@ -110,6 +110,11 @@
     margin-inline: 12px;
   }
 
+  &__status-wrapper {
+    display: flex;
+    padding: 12px;
+  }
+
   &__status {
     margin: 12px;
   }
