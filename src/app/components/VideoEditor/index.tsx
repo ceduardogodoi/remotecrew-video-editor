@@ -6,35 +6,22 @@ import { useForm } from 'react-hook-form'
 import { Pause, Play } from 'lucide-react'
 import { useAppContext } from '@/app/contexts'
 import { useFFmpeg } from '@/app/hooks/useFFmpeg'
+import { Toggle } from '@/app/components/Toggle'
 
-interface Inputs {
+export interface ProcessVideoParams {
   startTime: string
   endTime: string
   shouldAddIntro: boolean
   shouldAddLogo: boolean
+  shouldCrop: boolean
 }
 
 export function VideoEditor() {
-  const { register, handleSubmit } = useForm<Inputs>({
-    defaultValues: {
-      shouldAddIntro: false,
-      shouldAddLogo: true,
-    }
-  })
-
-  const {
-    isProcessing,
-    edittedVideoURL,
-    progressStatus,
-    processVideo,
-  } = useFFmpeg()
-
   const {
     isPlayerReady,
     isVideoPlaying,
     playerRef,
-    videoDuration: videoDurationSeconds,
-
+    videoDurationInSeconds: videoDurationSeconds,
     handlePlayVideo,
     handlePauseVideo,
     handlePlayPauseVideo,
@@ -45,14 +32,34 @@ export function VideoEditor() {
     videoDuration = dayjs.duration(videoDurationSeconds, 's').format('mm:ss')
   }
 
-  async function handleProcessVideo(data: Inputs) {
-    const { startTime, endTime, shouldAddIntro, shouldAddLogo } = data
-    
+  const { register, handleSubmit, watch } = useForm<ProcessVideoParams>({
+    defaultValues: {
+      shouldAddIntro: false,
+      shouldAddLogo: false,
+      shouldCrop: false,
+    }
+  })
+
+  const {
+    isProcessing,
+    edittedVideoURL,
+    progressStatus,
+    progressStatusText,
+    progressPercentage,
+    processVideo,
+  } = useFFmpeg()
+
+  const shouldCrop = watch('shouldCrop')
+
+  async function handleProcessVideo(data: ProcessVideoParams) {
+    const { startTime, endTime, shouldAddIntro, shouldAddLogo, shouldCrop } = data
+
     handlePauseVideo()
 
     await processVideo({
-      startTimeStr: startTime,
-      endTimeStr: endTime,
+      startTime,
+      endTime,
+      shouldCrop,
       shouldAddIntro,
       shouldAddLogo
     })
@@ -100,18 +107,21 @@ export function VideoEditor() {
               </button>
 
               <div className="video-editor__timing">
-                {progressStatus !== 'idle' && (
-                  <span>{progressStatus}</span>
-                )}
-
                 <button
                   type="submit"
                   className="btn btn--secondary"
                   title="Crop video in selected time range"
                   disabled={isProcessing}
                 >
-                  Crop
+                  Process
                 </button>
+
+                <Toggle
+                  title="Whether to crop the video or not"
+                  disabled={isProcessing}
+                  {...register('shouldCrop')}
+                  label="Auto Crop"
+                />
 
                 {!!edittedVideoURL && (
                   <a
@@ -137,6 +147,7 @@ export function VideoEditor() {
                     type="text"
                     defaultValue="01:50"
                     disabled={isProcessing}
+                    readOnly={!shouldCrop}
                     {...register('startTime')}
                   />
                 </div>
@@ -157,6 +168,7 @@ export function VideoEditor() {
                     id="end"
                     type="text"
                     defaultValue={videoDuration}
+                    readOnly={!shouldCrop}
                     disabled={isProcessing}
                     {...register('endTime')}
                   />
@@ -172,7 +184,6 @@ export function VideoEditor() {
                   <input
                     id="intro"
                     type="checkbox"
-                    defaultChecked={false}
                     {...register('shouldAddIntro')}
                   />
                   <label htmlFor="intro">Add Intro</label>
@@ -182,13 +193,19 @@ export function VideoEditor() {
                   <input
                     id="logo"
                     type="checkbox"
-                    defaultChecked
                     {...register('shouldAddLogo')}
                   />
                   <label htmlFor="logo">Add Logo</label>
                 </div>
               </div>
             </section>
+
+            <p className="video-editor__status">
+              Status:{' '}
+              {progressStatus !== 'idle' && (
+                <span>{progressStatusText} ({progressPercentage}%)</span>
+              )}
+            </p>
           </>
         )}
       </form>

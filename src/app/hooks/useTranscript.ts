@@ -15,7 +15,7 @@ export function useTranscript() {
     return data
   }
 
-  function cropTranscript(startMs: number, endMs: number) {
+  function cropTranscript(startMs: number, endMs: number, introDurationMs = 0) {
     const newTranscript = transcript.filter(sentence => {
       return sentence.offset >= startMs && sentence.offset <= endMs
     })

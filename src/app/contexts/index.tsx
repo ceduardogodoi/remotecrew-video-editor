@@ -19,7 +19,7 @@ interface AppContext {
   isPlayerReady: boolean
   isVideoPlaying: boolean
   sentenceIndex: number
-  videoDuration?: number
+  videoDurationInSeconds?: number
 
   updateTranscript(newTranscript: TranscriptResponse[]): void
   handlePlayVideo(): void
@@ -116,7 +116,7 @@ export function AppContextProvider({ children }: PropsWithChildren) {
       isPlayerReady: state.isPlayerReady,
       isVideoPlaying: state.isVideoPlaying,
       sentenceIndex: state.sentenceIndex,
-      videoDuration,
+      videoDurationInSeconds: videoDuration,
 
       updateTranscript,
       handlePlayVideo,

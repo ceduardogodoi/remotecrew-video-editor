@@ -1,0 +1,63 @@
+$slider-block-position: 10%;
+$slider-inline-initial-position: 4px;
+
+// 100% (most right side of the toggle)
+// 20px (width of the slider)
+// 4px ("padding-inline" for the slider)
+$slider-inline-end-position: calc(100% - 20px - 4px);
+
+.toggle {
+  align-items: center;
+  background-color: var(--c-gray-700);
+  border-radius: 26px;
+  block-size: 26px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  inline-size: 56px;
+  position: relative;
+  transition: background-color 100ms linear;
+
+  &__wrapper {
+    align-items: center;
+    display: flex;
+    column-gap: 4px;
+
+    .btn + & {
+      margin-inline-start: 12px;
+    }
+  }
+
+  &__label {
+    color: var(--c-gray-700);
+  }
+
+  & input {
+    display: none;
+  }
+
+  & input,
+  &__slider {
+    inset-block-start: $slider-block-position;
+    inset-inline-start: $slider-inline-initial-position;
+    position: absolute;
+  }
+
+  &__slider {
+    background-color: var(--c-white);
+    block-size: 20px;
+    border-radius: 100%;
+    display: flex;
+    inline-size: 20px;
+    pointer-events: none;
+    transition: inset-inline-start 100ms linear;
+  }
+
+  &:has(> input:checked) {
+    background-color: var(--c-green);
+  }
+
+  & input:checked + &__slider {
+    inset-inline-start: $slider-inline-end-position;
+  }
+}

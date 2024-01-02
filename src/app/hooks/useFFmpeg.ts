@@ -3,19 +3,11 @@ import dayjs from 'dayjs';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 import { useTranscript } from '@/app/hooks/useTranscript';
+import { ProcessVideoParams } from '../components/VideoEditor';
 
 const baseURL = 'http://localhost:3000'
 
-type FileData = Awaited<ReturnType<InstanceType<typeof FFmpeg>['readFile']>>
-
-type ProcessVideoParams = {
-  startTimeStr: string
-  endTimeStr: string
-  shouldAddIntro: boolean
-  shouldAddLogo: boolean
-}
-
-type ProgressStatus = 'idle' | 'adding-intro' | 'adding-logo' | 'cropping'
+type ProgressStatus = 'idle' | 'adding-intro' | 'adding-logo' | 'cropping' | 'done'
 
 export function useFFmpeg() {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -25,6 +17,24 @@ export function useFFmpeg() {
   const ffmpegRef = useRef<FFmpeg | null>(null)
 
   const { cropTranscript } = useTranscript()
+
+  let progressStatusText: string | null
+  switch (progressStatus) {
+    case 'adding-intro':
+      progressStatusText = 'Adding intro...'
+      break
+    case 'cropping':
+      progressStatusText = 'Cropping...'
+    case 'adding-logo':
+      progressStatusText = 'Adding logo...'
+      break
+    case 'done':
+      progressStatusText = 'Done'
+      break
+    case 'idle':
+    default:
+      progressStatusText = null
+  }
 
   async function loadFFmpeg() {
     if (!ffmpegRef.current) {
@@ -38,7 +48,12 @@ export function useFFmpeg() {
   async function processVideo(params: ProcessVideoParams) {
     setIsProcessing(true)
 
-    const { startTimeStr, endTimeStr, shouldAddIntro, shouldAddLogo } = params
+    const {
+      startTime: startTimeStr,
+      endTime: endTimeStr,
+      shouldAddIntro,
+      shouldAddLogo
+    } = params
 
     const [startTime, endTime] = [startTimeStr, endTimeStr]
       .map(time => {
@@ -57,36 +72,36 @@ export function useFFmpeg() {
     })
 
     ffmpegRef.current?.on('progress', ({ progress }) => {
-      setProgressPercentage(Math.round(progress * 100))
+      const percentage = Math.round(progress * 100) 
+      setProgressPercentage(percentage > 100 ? 100 : percentage)
     })
 
-    let data: FileData | undefined
     let outputFile = './output.mp4'
 
     await cropVideo(startTime.timeFormatted, endTime.timeFormatted, outputFile)
-    console.log(outputFile)
 
+    let introDurationMs = 0
     if (shouldAddIntro) {
-      console.log('adding intro')
-      outputFile = await addIntro(outputFile)
-      console.log('outputFile', outputFile)
+      const { outputFileWithIntro, introDuration } = await addIntro(outputFile)
+      introDurationMs = introDuration
+      outputFile = outputFileWithIntro
     }
 
     if (shouldAddLogo) {
-      console.log('adding logo')
       outputFile = await addLogo(outputFile)
-      console.log('outputFile', outputFile)
     }
 
-    data = await ffmpegRef.current?.readFile(outputFile)
+    const data = await ffmpegRef.current?.readFile(outputFile)
     if (data) {
       const url = URL.createObjectURL(new Blob([data], { type: 'video/*' }))
       setEdittedVideoURL(url)
+      URL.revokeObjectURL(url)
 
-      cropTranscript(startTime.timeMs, endTime.timeMs)
+      cropTranscript(startTime.timeMs, endTime.timeMs, introDurationMs)
     }
 
     setIsProcessing(false)
+    setProgressStatus('done')
   }
 
   async function cropVideo(startTime: string, endTime: string, outputFile: string) {
@@ -114,6 +129,19 @@ export function useFFmpeg() {
 
     const outputFileWithIntro = 'intro-output.mkv'
 
+    const video = document.createElement('video')
+    video.setAttribute('src', './intro.mp4')
+    video.preload = 'metadata'
+
+    let introDuration = 0
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(video.src)
+      introDuration = dayjs
+        .duration({ seconds: video.duration })
+        .asMilliseconds()
+    }
+    video.remove()
+
     await ffmpegRef.current?.exec([
       '-i', 'intro.mp4',
       '-i', inputFile,
@@ -123,7 +151,10 @@ export function useFFmpeg() {
       outputFileWithIntro,
     ])
 
-    return outputFileWithIntro
+    return {
+      outputFileWithIntro,
+      introDuration,
+    }
   }
 
   async function addLogo(inputFile: string) {
@@ -156,6 +187,7 @@ export function useFFmpeg() {
     edittedVideoURL,
     progressPercentage,
     progressStatus,
+    progressStatusText,
     processVideo,
   }
 }

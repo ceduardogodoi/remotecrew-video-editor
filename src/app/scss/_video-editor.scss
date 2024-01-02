@@ -30,6 +30,10 @@
   &__timing {
     align-items: center;
     display: flex;
+
+    & .btn + .toggle {
+      margin-inline-start: 12px;
+    }
   }
 
   &__properties-section {
@@ -74,6 +78,10 @@
     &:first-of-type {
       margin-inline-start: 12px;
     }
+
+    .toggle__wrapper + & {
+      margin-inline-start: 12px;
+    }
   }
 
   &__form-label {
@@ -100,5 +108,9 @@
   &__time-separator {
     color: var(--c-gray-700);
     margin-inline: 12px;
+  }
+
+  &__status {
+    margin: 12px;
   }
 }
