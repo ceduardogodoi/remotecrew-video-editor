@@ -49,17 +49,19 @@ export function VideoEditor() {
     processVideo,
   } = useFFmpeg()
 
-  const [shouldCrop, shouldAddIntro, shouldAddLogo] = watch(['shouldCrop', 'shouldAddIntro', 'shouldAddLogo'])
+  const [shouldCrop, shouldAddIntro, shouldAddLogo] = watch(
+    ['shouldCrop', 'shouldAddIntro', 'shouldAddLogo']
+  )
   const hasNoProcess = !shouldCrop && !shouldAddIntro && !shouldAddLogo
 
-  async function handleProcessVideo(data: ProcessVideoParams) {
-    const { startTime, endTime, shouldAddIntro, shouldAddLogo, shouldCrop } = data
+  async function handleProcessVideo(params: ProcessVideoParams) {
+    const { startTime, endTime, shouldAddIntro, shouldAddLogo, shouldCrop } = params
 
     handlePauseVideo()
 
     await processVideo({
-      startTime,
-      endTime,
+      startTime: !shouldCrop ? '00:00' : startTime,
+      endTime: !shouldCrop ? videoDuration! : endTime,
       shouldCrop,
       shouldAddIntro,
       shouldAddLogo
@@ -135,7 +137,7 @@ export function VideoEditor() {
                     className="video-editor__form-input"
                     id="start"
                     type="text"
-                    defaultValue="01:50"
+                    defaultValue="00:00"
                     disabled={isProcessing}
                     readOnly={!shouldCrop}
                     {...register('startTime')}
