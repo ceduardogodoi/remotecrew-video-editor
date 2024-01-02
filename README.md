@@ -3,7 +3,7 @@
 First, clone the project in a folder of your choice:
 
 ```sh
-git clone <<link>>
+git clone git@github.com:ceduardogodoi/remotecrew-video-editor.git
 ```
 
 Change to the project's directory:
