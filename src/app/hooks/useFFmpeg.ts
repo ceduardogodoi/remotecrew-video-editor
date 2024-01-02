@@ -83,7 +83,7 @@ export function useFFmpeg() {
     })
 
     ffmpegRef.current?.on('progress', ({ progress }) => {
-      const percentage = Math.round(progress * 100) 
+      const percentage = Math.round(progress * 100)
       setProgressPercentage(percentage > 100 ? 100 : percentage)
     })
 
@@ -98,22 +98,22 @@ export function useFFmpeg() {
       if (shouldCrop) {
         await cropVideo(startTime.timeFormatted, endTime.timeFormatted)
       }
-  
+
       let introDurationMs = 0
       if (shouldAddIntro) {
         const introDuration = await addIntro()
         introDurationMs = introDuration
       }
-  
-      // if (shouldAddLogo) {
-      //   outputFile = await addLogo(outputFile)
-      // }
-  
+
+      if (shouldAddLogo) {
+        await addLogo()
+      }
+
       const data = await ffmpegRef.current?.readFile(fileRef.current.outputFile!)
       if (data) {
         const url = URL.createObjectURL(new Blob([data], { type: 'video/*' }))
         setEdittedVideoURL(url)
-  
+
         cropTranscript(startTime.timeMs, endTime.timeMs, introDurationMs)
       }
 
@@ -122,9 +122,6 @@ export function useFFmpeg() {
       console.log(error)
       setProgressStatus('error')
     }
-
-    const dir = await ffmpegRef.current?.listDir('/')
-    console.log('dir:::::', dir)
 
     setIsProcessing(false)
   }
@@ -178,7 +175,7 @@ export function useFFmpeg() {
     return introDuration
   }
 
-  async function addLogo(inputFile: string) {
+  async function addLogo() {
     setProgressStatus('adding-logo')
 
     const url = new URL('/logo.jpeg', baseURL)
@@ -188,13 +185,13 @@ export function useFFmpeg() {
     const outputFileWithLogo = 'logo-output.mp4'
 
     await ffmpegRef.current?.exec([
-      '-i', inputFile,
+      '-i', fileRef.current.outputFile ?? 'input.mp4',
       '-i', 'logo.jpeg',
       '-filter_complex', '[0:v][1:v] overlay=25:50',
       outputFileWithLogo,
     ])
 
-    return outputFileWithLogo
+    fileRef.current.outputFile = outputFileWithLogo
   }
 
   useEffect(() => {
