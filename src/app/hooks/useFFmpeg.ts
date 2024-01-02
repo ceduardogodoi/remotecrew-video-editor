@@ -121,6 +121,8 @@ export function useFFmpeg() {
     } catch (error) {
       console.log(error)
       setProgressStatus('error')
+    } finally {
+      fileRef.current = {}
     }
 
     setIsProcessing(false)
@@ -129,11 +131,13 @@ export function useFFmpeg() {
   async function cropVideo(startTime: string, endTime: string) {
     setProgressStatus('cropping')
 
+    fileRef.current.inputFile = 'input.mp4'
     fileRef.current.outputFile = 'output.mp4'
-    const outputFile = fileRef.current.outputFile
+
+    const { inputFile, outputFile } = fileRef.current
 
     await ffmpegRef.current?.exec([
-      '-i', 'input.mp4',
+      '-i', inputFile,
       '-ss', startTime,
       '-to', endTime,
       outputFile,
@@ -160,17 +164,22 @@ export function useFFmpeg() {
     }
     video.remove()
 
-    fileRef.current.outputFile = 'intro-output.mkv'
-    const outputFile = fileRef.current.outputFile
+    const { outputFile } = fileRef.current
+    const newInputFile = outputFile ?? 'input.mp4'
+    fileRef.current.inputFile = newInputFile
+
+    const newOutputFile = 'intro-output.mkv'
 
     await ffmpegRef.current?.exec([
       '-i', 'intro.mp4',
-      '-i', fileRef.current.inputFile ?? 'input.mp4',
+      '-i', newInputFile,
       '-filter_complex', '[0:v] [0:a] [1:v] [1:a] concat=n=2:v=1:a=1 [v] [a]',
       '-map', '[v]',
       '-map', '[a]',
-      outputFile,
+      newOutputFile,
     ])
+
+    fileRef.current.outputFile = newOutputFile
 
     return introDuration
   }
@@ -182,16 +191,19 @@ export function useFFmpeg() {
     const logoFile = await fetchFile(url.href)
     await ffmpegRef.current?.writeFile('./logo.jpeg', logoFile)
 
-    const outputFileWithLogo = 'logo-output.mp4'
+    
+    const { outputFile } = fileRef.current
+    const newInputFile = outputFile ?? 'input.mp4'
+    const newOutputFileWithlogo = 'logo-output.mp4'
 
     await ffmpegRef.current?.exec([
-      '-i', fileRef.current.outputFile ?? 'input.mp4',
+      '-i', newInputFile,
       '-i', 'logo.jpeg',
       '-filter_complex', '[0:v][1:v] overlay=25:50',
-      outputFileWithLogo,
+      newOutputFileWithlogo,
     ])
 
-    fileRef.current.outputFile = outputFileWithLogo
+    fileRef.current.outputFile = newOutputFileWithlogo
   }
 
   useEffect(() => {
